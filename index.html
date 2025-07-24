@@ -366,15 +366,17 @@
         .item-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 0;
             padding: 0;
             transition: all 0.3s ease;
+            width: 100%;
         }
 
         .item-left-content {
             flex: 1;
             min-width: 0;
+            margin-right: 10px;
         }
 
         .item-title {
@@ -384,6 +386,7 @@
             line-height: 1.4;
             margin-bottom: 6px;
             transition: all 0.3s ease;
+            word-wrap: break-word;
         }
 
         .item-date {
@@ -402,7 +405,8 @@
             font-weight: 500;
             transition: all 0.3s ease;
             flex-shrink: 0;
-            margin-left: 10px;
+            align-self: flex-start;
+            display: block;
         }
 
         .item-status.completed {
@@ -1467,35 +1471,30 @@
                     } else if (isDragging && Math.abs(currentX) > 50) {
                         // 滑動操作
                         if (currentX < -80) {
-                            // 滑動距離夠大，顯示操作按鈕
+                            // 滑動距離夠大，顯示操作按鈕，保持文字縮小
                             swipeContainer.style.transform = 'translateX(-160px)';
-                            swipeContainer.classList.add('swiped'); // 保持緊湊狀態
-                            swipeContainer.classList.remove('swiping');
+                            swipeContainer.classList.add('swiping'); // 保持縮小狀態
                             actionsBg.classList.add('visible');
                             isActionsVisible = true;
                         } else if (isActionsVisible) {
-                            // 如果操作按鈕已顯示，再次滑動則隱藏
+                            // 如果操作按鈕已顯示，再次滑動則隱藏，恢復文字大小
                             swipeContainer.style.transform = 'translateX(0)';
-                            swipeContainer.classList.remove('swiping', 'swiped');
+                            swipeContainer.classList.remove('swiping');
                             actionsBg.classList.remove('visible');
                             isActionsVisible = false;
                         } else {
-                            // 回彈
+                            // 回彈，恢復文字大小
                             swipeContainer.style.transform = 'translateX(0)';
-                            swipeContainer.classList.remove('swiping', 'swiped');
+                            swipeContainer.classList.remove('swiping');
                             actionsBg.classList.remove('visible');
                         }
                     } else {
-                        // 小幅度滑動，回彈或切換狀態
+                        // 小幅度滑動，回彈，恢復文字大小
+                        swipeContainer.style.transform = 'translateX(0)';
+                        swipeContainer.classList.remove('swiping');
+                        actionsBg.classList.remove('visible');
                         if (isActionsVisible) {
-                            swipeContainer.style.transform = 'translateX(0)';
-                            swipeContainer.classList.remove('swiping', 'swiped');
-                            actionsBg.classList.remove('visible');
                             isActionsVisible = false;
-                        } else {
-                            swipeContainer.style.transform = 'translateX(0)';
-                            swipeContainer.classList.remove('swiping', 'swiped');
-                            actionsBg.classList.remove('visible');
                         }
                     }
 
@@ -1510,7 +1509,7 @@
                 document.addEventListener('click', (e) => {
                     if (!itemElement.contains(e.target) && isActionsVisible) {
                         swipeContainer.style.transform = 'translateX(0)';
-                        swipeContainer.classList.remove('swiping', 'swiped');
+                        swipeContainer.classList.remove('swiping');
                         actionsBg.classList.remove('visible');
                         isActionsVisible = false;
                     }
