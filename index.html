@@ -60,7 +60,7 @@
         /* 懸浮按鈕 */
         .floating-btn {
             position: fixed;
-            bottom: 80px;
+            bottom: 120px;
             right: 30px;
             width: 60px;
             height: 60px;
@@ -359,28 +359,22 @@
             transition: all 0.3s ease;
         }
 
-        .item-title {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: #333;
+        .item-left-content {
             flex: 1;
-            line-height: 1.4;
             transition: all 0.3s ease;
         }
 
-        .item-date-status {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 8px;
-            font-size: 0.9em;
-            flex-shrink: 0;
+        .item-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #333;
+            line-height: 1.4;
+            margin-bottom: 8px;
             transition: all 0.3s ease;
         }
 
         .item-date {
             color: #666;
-            white-space: nowrap;
             font-size: 1em;
             transition: all 0.3s ease;
         }
@@ -394,6 +388,7 @@
             white-space: nowrap;
             font-weight: 500;
             transition: all 0.3s ease;
+            align-self: flex-start;
         }
 
         .item-status.completed {
@@ -404,21 +399,42 @@
         /* 滑動時的緊湊樣式 */
         .item-swipe-container.swiping .item-title {
             font-size: 1.1em;
-        }
-
-        .item-swipe-container.swiping .item-date-status {
-            font-size: 0.8em;
-            gap: 5px;
+            margin-bottom: 4px;
         }
 
         .item-swipe-container.swiping .item-date {
-            font-size: 0.9em;
+            font-size: 0.85em;
         }
 
         .item-swipe-container.swiping .item-status {
-            font-size: 0.85em;
+            font-size: 0.8em;
             padding: 4px 8px;
             border-radius: 12px;
+        }
+
+        .action-complete, .action-delete {
+            width: 80px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .action-complete {
+            background: #9e9e9e;
+        }
+
+        .action-complete.undo {
+            background: #757575;
+        }
+
+        .action-delete {
+            background: #616161;
         }
 
         /* 滑動操作背景 */
@@ -643,7 +659,7 @@
                 width: 50px;
                 height: 50px;
                 font-size: 20px;
-                bottom: 60px;
+                bottom: 100px;
                 right: 20px;
                 border-width: 2px;
             }
@@ -1153,11 +1169,11 @@
                         <div class="item-swipe-container">
                             <div class="item-content-wrapper">
                                 <div class="item-header" onclick="app.toggleItemExpansion(${item.id})">
-                                    <div class="item-title">${item.title}</div>
-                                    <div class="item-date-status">
+                                    <div class="item-left-content">
+                                        <div class="item-title">${item.title}</div>
                                         <div class="item-date">📅 ${item.createdAt}</div>
-                                        <div class="item-status ${item.status === '已完成' ? 'completed' : ''}">${this.getStatusIcon(item.status)} ${item.status}</div>
                                     </div>
+                                    <div class="item-status ${item.status === '已完成' ? 'completed' : ''}">${this.getStatusIcon(item.status)} ${item.status}</div>
                                 </div>
                                 
                                 <div class="item-expandable">
