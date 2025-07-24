@@ -360,7 +360,7 @@
         /* 滑動時確保內容不會被遮蔽或消失 */
         .item-swipe-container.swiping .item-content-wrapper {
             padding: 12px 15px;
-            width: calc(100% - 160px); /* 為操作按鈕留空間但保持內容可見 */
+            /* 移除會導致內容消失的width限制 */
         }
 
         .item-header {
@@ -922,7 +922,7 @@
                 let initialTop = 0;
                 let hasMoved = false;
 
-                // 開始觸控
+                // 開始觸控 - 只綁定在懸浮按鈕上
                 const handleStart = (e) => {
                     const touch = e.type === 'mousedown' ? e : e.touches[0];
                     startX = touch.clientX;
@@ -940,45 +940,38 @@
                         if (!hasMoved) {
                             isDragging = true;
                             floatingBtn.classList.add('dragging');
-                            // 禁用transition以避免拖拽時的延遲
                             floatingBtn.style.transition = 'none';
                         }
                     }, 500);
+
+                    e.stopPropagation(); // 防止事件冒泡
                 };
 
-                // 移動
+                // 移動 - 只在懸浮按鈕事件中處理
                 const handleMove = (e) => {
-                    if (!startX || !startY) return;
+                    if (!startX || !startY || !isDragging) return;
+                    
+                    e.preventDefault();
+                    e.stopPropagation();
                     
                     const touch = e.type === 'mousemove' ? e : e.touches[0];
                     const deltaX = touch.clientX - startX;
                     const deltaY = touch.clientY - startY;
 
-                    // 檢測是否有移動
-                    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
-                        hasMoved = true;
-                    }
-
-                    // 如果是拖拽模式，更新位置
-                    if (isDragging) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        let newLeft = initialLeft + deltaX;
-                        let newTop = initialTop + deltaY;
-                        
-                        // 邊界限制
-                        newLeft = Math.max(10, Math.min(window.innerWidth - 70, newLeft));
-                        newTop = Math.max(10, Math.min(window.innerHeight - 70, newTop));
-                        
-                        floatingBtn.style.left = newLeft + 'px';
-                        floatingBtn.style.top = newTop + 'px';
-                        floatingBtn.style.right = 'auto';
-                        floatingBtn.style.bottom = 'auto';
-                    }
+                    let newLeft = initialLeft + deltaX;
+                    let newTop = initialTop + deltaY;
+                    
+                    // 邊界限制
+                    newLeft = Math.max(10, Math.min(window.innerWidth - 70, newLeft));
+                    newTop = Math.max(10, Math.min(window.innerHeight - 70, newTop));
+                    
+                    floatingBtn.style.left = newLeft + 'px';
+                    floatingBtn.style.top = newTop + 'px';
+                    floatingBtn.style.right = 'auto';
+                    floatingBtn.style.bottom = 'auto';
                 };
 
-                // 結束觸控
+                // 結束觸控 - 只在懸浮按鈕事件中處理
                 const handleEnd = (e) => {
                     clearTimeout(longPressTimer);
                     
@@ -995,6 +988,9 @@
                             left: rect.left,
                             top: rect.top
                         }));
+                        
+                        e.preventDefault();
+                        e.stopPropagation();
                     } else if (!hasMoved) {
                         // 短按且沒有移動，執行切換模式
                         e.preventDefault();
@@ -1009,15 +1005,56 @@
                     startY = 0;
                 };
 
-                // 綁定事件
+                // 檢測移動
+                const checkMove = (e) => {
+                    if (!startX || !startY) return;
+                    
+                    const touch = e.type === 'mousemove' ? e : e.touches[0];
+                    const deltaX = touch.clientX - startX;
+                    const deltaY = touch.clientY - startY;
+
+                    if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+                        hasMoved = true;
+                        clearTimeout(longPressTimer);
+                    }
+
+                    if (isDragging) {
+                        handleMove(e);
+                    }
+                };
+
+                // 只綁定在懸浮按鈕上，不綁定到document
                 floatingBtn.addEventListener('mousedown', handleStart);
                 floatingBtn.addEventListener('touchstart', handleStart, { passive: false });
                 
-                document.addEventListener('mousemove', handleMove);
-                document.addEventListener('touchmove', handleMove, { passive: false });
+                floatingBtn.addEventListener('mousemove', checkMove);
+                floatingBtn.addEventListener('touchmove', checkMove, { passive: false });
                 
-                document.addEventListener('mouseup', handleEnd);
-                document.addEventListener('touchend', handleEnd);
+                floatingBtn.addEventListener('mouseup', handleEnd);
+                floatingBtn.addEventListener('touchend', handleEnd);
+                
+                // 全域事件只處理拖拽中的移動
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) handleMove(e);
+                });
+                document.addEventListener('touchmove', (e) => {
+                    if (isDragging) handleMove(e);
+                }, { passive: false });
+                
+                document.addEventListener('mouseup', (e) => {
+                    if (isDragging) {
+                        isDragging = false;
+                        floatingBtn.classList.remove('dragging');
+                        floatingBtn.style.transition = 'all 0.3s ease';
+                    }
+                });
+                document.addEventListener('touchend', (e) => {
+                    if (isDragging) {
+                        isDragging = false;
+                        floatingBtn.classList.remove('dragging');
+                        floatingBtn.style.transition = 'all 0.3s ease';
+                    }
+                });
 
                 // 恢復上次儲存的位置
                 const savedPosition = localStorage.getItem('floatingBtnPosition');
