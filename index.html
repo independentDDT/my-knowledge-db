@@ -455,7 +455,7 @@
             background: #616161;
         }
 
-        /* 滑動操作背景 */
+        /* 操作按鈕背景層級調低，確保不遮蔽文字 */
         .item-actions-bg {
             position: absolute;
             top: 0;
@@ -463,7 +463,7 @@
             height: 100%;
             display: flex;
             align-items: center;
-            z-index: 1;
+            z-index: 1; /* 低於文字層級 */
             border-radius: 15px;
             opacity: 0;
             visibility: hidden;
