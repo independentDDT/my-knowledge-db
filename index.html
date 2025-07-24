@@ -385,16 +385,16 @@
             color: #333;
             line-height: 1.4;
             margin-bottom: 6px;
-            /* 移除transition避免字距變化被平滑化 */
+            transition: all 0.3s ease; /* 恢復平滑過渡 */
             word-wrap: break-word;
-            letter-spacing: 3px; /* 更誇張的字距 */
+            letter-spacing: 3px; /* 誇張的字距 */
         }
 
         .item-date {
             color: #666;
             font-size: 1em;
-            /* 移除transition避免字距變化被平滑化 */
-            letter-spacing: 2px; /* 更誇張的字距 */
+            transition: all 0.3s ease; /* 恢復平滑過渡 */
+            letter-spacing: 2px; /* 誇張的字距 */
         }
 
         .item-status {
@@ -405,11 +405,11 @@
             color: #667eea;
             white-space: nowrap;
             font-weight: 500;
-            /* 移除transition避免字距變化被平滑化 */
+            transition: all 0.3s ease; /* 恢復平滑過渡 */
             flex-shrink: 0;
             align-self: flex-start;
             display: block;
-            letter-spacing: 2px; /* 更誇張的預設字距 */
+            letter-spacing: 2px; /* 誇張的預設字距 */
         }
 
         .item-status.completed {
