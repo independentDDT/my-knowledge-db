@@ -60,8 +60,8 @@
         /* 懸浮按鈕 */
         .floating-btn {
             position: fixed;
-            top: 20px;
-            left: 20px;
+            bottom: 30px;
+            right: 30px;
             width: 60px;
             height: 60px;
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
@@ -84,11 +84,6 @@
         .floating-btn:hover {
             transform: scale(1.1);
             box-shadow: 0 12px 35px rgba(79, 172, 254, 0.6);
-        }
-
-        .floating-btn.dragging {
-            transform: scale(1.2);
-            box-shadow: 0 15px 40px rgba(79, 172, 254, 0.8);
         }
 
         /* 內容區域切換 */
@@ -319,6 +314,7 @@
             padding: 20px;
             transition: all 0.3s ease;
             position: relative;
+            cursor: pointer;
         }
 
         .item:hover {
@@ -327,18 +323,54 @@
             transform: translateY(-2px);
         }
 
+        .item.collapsed {
+            padding: 15px 20px;
+        }
+
         .item-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
+            align-items: center;
+            margin-bottom: 0;
         }
 
         .item-title {
-            font-size: 1.2em;
+            font-size: 1.1em;
             font-weight: 600;
             color: #333;
-            margin-bottom: 5px;
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .item-date-status {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+            font-size: 0.8em;
+        }
+
+        .item-date {
+            color: #999;
+        }
+
+        .item-status {
+            font-size: 0.9em;
+        }
+
+        .item-expandable {
+            display: none;
+        }
+
+        .item.expanded .item-expandable {
+            display: block;
+            margin-top: 15px;
+        }
+
+        .item.expanded .item-header {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 10px;
         }
 
         .item-source {
@@ -492,6 +524,8 @@
                 width: 50px;
                 height: 50px;
                 font-size: 20px;
+                bottom: 20px;
+                right: 20px;
             }
         }
     </style>
@@ -531,25 +565,7 @@
 
             <!-- 新增模式 -->
             <div class="content-section active" id="addMode">
-                <!-- 快速分享區域 -->
-                <div class="quick-share">
-                    <h3>🚀 快速分享</h3>
-                    <p style="margin-bottom: 15px; opacity: 0.9;">方法一：貼上分享連結自動解析</p>
-                    <div class="share-url-input">
-                        <input type="url" id="shareUrl" placeholder="貼上分享連結...">
-                        <button class="parse-btn" onclick="app.parseSharedContent()">解析內容</button>
-                    </div>
-                    
-                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.3);">
-                        <p style="margin-bottom: 10px; opacity: 0.9;">方法二：一鍵收藏書籤</p>
-                        <p style="font-size: 14px; margin-bottom: 15px; opacity: 0.8;">拖拽下方按鈕到瀏覽器書籤列，在任何網頁點擊即可快速收藏</p>
-                        <a href="javascript:(function(){var title=document.title||'';var url=window.location.href;var content=window.getSelection().toString()||'';window.open('你的網址#quick-add?title='+encodeURIComponent(title)+'&url='+encodeURIComponent(url)+'&content='+encodeURIComponent(content),'_blank');})();" 
-                           style="background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 20px; text-decoration: none; display: inline-block; border: 2px solid rgba(255,255,255,0.3);">
-                           📚 收藏到知識庫
-                        </a>
-                        <p style="font-size: 12px; margin-top: 10px; opacity: 0.7;">*請將上方按鈕拖拽到書籤列，替換網址為你的實際網址</p>
-                    </div>
-                </div>
+
 
                 <!-- 新增項目表單 -->
                 <div class="form-section">
@@ -622,13 +638,16 @@
                         <button class="filter-btn" data-filter="學習">📚 學習</button>
                         <button class="filter-btn" data-filter="工作參考">💼 工作參考</button>
                         <button class="filter-btn" data-filter="分享靈感">💡 分享靈感</button>
-                        <button class="filter-btn" data-filter="待處理">⏳ 待處理</button>
                     </div>
                     
-                    <div class="filters">
-                        <button class="filter-btn" data-status="未開始">⭕ 未開始</button>
-                        <button class="filter-btn" data-status="進行中">🔄 進行中</button>
-                        <button class="filter-btn" data-status="已完成">✅ 已完成</button>
+                    <!-- 子分類篩選 -->
+                    <div class="sub-filters" id="subFilters" style="display: none;">
+                        <div style="margin-bottom: 10px; font-weight: 600; color: #333;">篩選條件：</div>
+                        <div class="filters">
+                            <button class="filter-btn" data-status="未開始">⭕ 未開始</button>
+                            <button class="filter-btn" data-status="進行中">🔄 進行中</button>
+                            <button class="filter-btn" data-status="已完成">✅ 已完成</button>
+                        </div>
                     </div>
                 </div>
 
@@ -663,29 +682,7 @@
             }
 
             checkQuickAdd() {
-                // 檢查 URL 參數，支援書籤快速新增
-                const urlParams = new URLSearchParams(window.location.search);
-                const title = urlParams.get('title');
-                const url = urlParams.get('url');
-                const content = urlParams.get('content');
-                
-                if (title || url) {
-                    // 自動填入表單
-                    if (title) document.getElementById('title').value = title;
-                    if (url) document.getElementById('source').value = url;
-                    if (content) document.getElementById('content').value = content;
-                    
-                    // 切換到新增模式
-                    this.switchMode('add');
-                    document.querySelectorAll('.mode-btn').forEach(btn => {
-                        btn.classList.toggle('active', btn.dataset.mode === 'add');
-                    });
-                    
-                    // 提示用戶
-                    setTimeout(() => {
-                        alert('已自動填入頁面資訊！請檢查並完善其他資訊。');
-                    }, 500);
-                }
+                // 移除無效的快速新增檢查功能
             }
 
             initializeEventListeners() {
@@ -735,6 +732,18 @@
                             e.target.classList.add('active');
                             this.currentFilter = e.target.dataset.filter;
                             this.currentStatusFilter = null;
+                            
+                            // 顯示子篩選選項（除了全部）
+                            const subFilters = document.getElementById('subFilters');
+                            if (this.currentFilter === 'all') {
+                                subFilters.style.display = 'none';
+                            } else {
+                                subFilters.style.display = 'block';
+                            }
+                            
+                            // 重置狀態篩選
+                            document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('active'));
+                            
                         } else if (e.target.dataset.status) {
                             document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('active'));
                             if (this.currentStatusFilter === e.target.dataset.status) {
@@ -751,155 +760,57 @@
 
             initializeFloatingButton() {
                 const floatingBtn = document.getElementById('floatingBtn');
-                this.isDragging = false;
-                this.startX = null;
-                this.startY = null;
-                this.initialLeft = null;
-                this.initialTop = null;
-
-                // 點擊切換模式
-                floatingBtn.addEventListener('click', (e) => {
-                    if (!this.isDragging) {
-                        this.toggleMode();
-                    }
+                
+                // 簡化點擊事件
+                floatingBtn.addEventListener('click', () => {
+                    this.toggleMode();
                 });
-
-                // 拖拽功能
-                floatingBtn.addEventListener('mousedown', this.startDrag.bind(this));
-                floatingBtn.addEventListener('touchstart', this.startDrag.bind(this), { passive: false });
-
-                document.addEventListener('mousemove', this.drag.bind(this));
-                document.addEventListener('touchmove', this.drag.bind(this), { passive: false });
-
-                document.addEventListener('mouseup', this.endDrag.bind(this));
-                document.addEventListener('touchend', this.endDrag.bind(this));
             }
 
-            startDrag(e) {
-                e.preventDefault();
-                const floatingBtn = document.getElementById('floatingBtn');
-                this.isDragging = false;
 
-                const clientX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
-                const clientY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
-
-                this.startX = clientX;
-                this.startY = clientY;
-                this.initialLeft = floatingBtn.offsetLeft;
-                this.initialTop = floatingBtn.offsetTop;
-
-                floatingBtn.classList.add('dragging');
-            }
-
-            drag(e) {
-                if (!this.startX || !this.startY) return;
-
-                e.preventDefault();
-                const clientX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
-                const clientY = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
-
-                const deltaX = clientX - this.startX;
-                const deltaY = clientY - this.startY;
-
-                if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
-                    this.isDragging = true;
-                }
-
-                if (this.isDragging) {
-                    const floatingBtn = document.getElementById('floatingBtn');
-                    const newLeft = Math.max(0, Math.min(window.innerWidth - 60, this.initialLeft + deltaX));
-                    const newTop = Math.max(0, Math.min(window.innerHeight - 60, this.initialTop + deltaY));
-
-                    floatingBtn.style.left = newLeft + 'px';
-                    floatingBtn.style.top = newTop + 'px';
-                }
-            }
-
-            endDrag(e) {
-                const floatingBtn = document.getElementById('floatingBtn');
-                floatingBtn.classList.remove('dragging');
-
-                // 延遲重置拖拽狀態，避免點擊事件觸發
-                setTimeout(() => {
-                    this.isDragging = false;
-                }, 100);
-
-                this.startX = null;
-                this.startY = null;
-            }
 
             toggleMode() {
+                // 切換模式
                 this.currentMode = this.currentMode === 'add' ? 'view' : 'add';
                 this.switchMode(this.currentMode);
                 
-                // 更新按鈕
+                // 更新頂部模式按鈕
                 document.querySelectorAll('.mode-btn').forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.mode === this.currentMode);
                 });
 
-                // 更新懸浮按鈕圖示
+                // 更新懸浮按鈕圖示和文字
                 const floatingBtn = document.getElementById('floatingBtn');
-                floatingBtn.textContent = this.currentMode === 'add' ? '📖' : '💡';
-                floatingBtn.title = this.currentMode === 'add' ? '切換到瀏覽模式' : '切換到新增模式';
+                if (this.currentMode === 'add') {
+                    floatingBtn.textContent = '📖';
+                    floatingBtn.title = '切換到瀏覽模式';
+                } else {
+                    floatingBtn.textContent = '➕';
+                    floatingBtn.title = '切換到新增模式';
+                }
             }
 
             switchMode(mode) {
                 this.currentMode = mode;
+                
+                // 隱藏所有區塊
                 document.querySelectorAll('.content-section').forEach(section => {
                     section.classList.remove('active');
                 });
                 
+                // 顯示對應區塊
                 if (mode === 'add') {
                     document.getElementById('addMode').classList.add('active');
                 } else {
                     document.getElementById('viewMode').classList.add('active');
+                    // 當切換到瀏覽模式時，重新渲染項目
+                    this.render();
                 }
             }
 
             parseSharedContent() {
-                const shareUrl = document.getElementById('shareUrl').value.trim();
-                if (!shareUrl) {
-                    alert('請輸入分享連結');
-                    return;
-                }
-
-                // 簡單的連結解析（在實際應用中，你可能需要更複雜的解析邏輯）
-                try {
-                    // 模擬從連結擷取內容
-                    const url = new URL(shareUrl);
-                    
-                    // 設定來源
-                    document.getElementById('source').value = shareUrl;
-                    
-                    // 根據不同平台設定不同的標題前綴
-                    let prefix = '';
-                    if (url.hostname.includes('instagram.com')) {
-                        prefix = 'Instagram分享: ';
-                    } else if (url.hostname.includes('facebook.com')) {
-                        prefix = 'Facebook分享: ';
-                    } else if (url.hostname.includes('threads.net')) {
-                        prefix = 'Threads分享: ';
-                    } else {
-                        prefix = '網頁分享: ';
-                    }
-                    
-                    // 提示用戶輸入標題內容
-                    const title = prompt('請輸入或貼上文章的第一句話作為標題:', prefix);
-                    if (title) {
-                        document.getElementById('title').value = title;
-                    }
-                    
-                    // 自動設定為分享靈感分類
-                    document.getElementById('category').value = '分享靈感';
-                    
-                    // 清空分享連結輸入框
-                    document.getElementById('shareUrl').value = '';
-                    
-                    alert('內容已解析！請檢查並完善其他資訊。');
-                    
-                } catch (error) {
-                    alert('連結格式不正確，請檢查後重新輸入。');
-                }
+                // 移除無效的分享解析功能
+                alert('此功能已移除，請直接手動填入資訊');
             }
 
             addCustomCategory() {
@@ -964,13 +875,12 @@
                 const container = document.getElementById('categoryFilters');
                 const currentFilter = this.currentFilter;
                 
-                // 重建篩選按鈕
+                // 重建篩選按鈕 - 只顯示主要分類
                 container.innerHTML = `
                     <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" data-filter="all">全部</button>
                     <button class="filter-btn ${currentFilter === '學習' ? 'active' : ''}" data-filter="學習">📚 學習</button>
                     <button class="filter-btn ${currentFilter === '工作參考' ? 'active' : ''}" data-filter="工作參考">💼 工作參考</button>
                     <button class="filter-btn ${currentFilter === '分享靈感' ? 'active' : ''}" data-filter="分享靈感">💡 分享靈感</button>
-                    <button class="filter-btn ${currentFilter === '待處理' ? 'active' : ''}" data-filter="待處理">⏳ 待處理</button>
                 `;
                 
                 // 加入自定義分類篩選
@@ -1034,13 +944,7 @@
                 this.updateStats();
                 
                 // 新增完成後自動切換到瀏覽模式
-                this.currentMode = 'view';
-                this.switchMode('view');
-                document.querySelectorAll('.mode-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.mode === 'view');
-                });
-                document.getElementById('floatingBtn').textContent = '💡';
-                document.getElementById('floatingBtn').title = '切換到新增模式';
+                this.toggleMode();
             }
 
             resetForm() {
@@ -1113,40 +1017,62 @@
                 }
 
                 container.innerHTML = filteredItems.map(item => `
-                    <div class="item">
+                    <div class="item collapsed" data-id="${item.id}" onclick="app.toggleItemExpansion(${item.id})">
                         <div class="item-header">
-                            <div>
-                                <div class="item-title">${item.title}</div>
-                                ${item.source ? `<div class="item-source">🔗 ${item.source}</div>` : ''}
+                            <div class="item-title">${item.title}</div>
+                            <div class="item-date-status">
+                                <div class="item-date">📅 ${item.createdAt}</div>
+                                <div class="item-status">${this.getStatusIcon(item.status)} ${item.status}</div>
                             </div>
-                            <select class="status-selector" onchange="app.updateStatus(${item.id}, this.value)">
-                                <option value="未開始" ${item.status === '未開始' ? 'selected' : ''}>⭕ 未開始</option>
-                                <option value="進行中" ${item.status === '進行中' ? 'selected' : ''}>🔄 進行中</option>
-                                <option value="已完成" ${item.status === '已完成' ? 'selected' : ''}>✅ 已完成</option>
-                                <option value="暫停" ${item.status === '暫停' ? 'selected' : ''}>⏸️ 暫停</option>
-                                <option value="不適用" ${item.status === '不適用' ? 'selected' : ''}>❌ 不適用</option>
-                            </select>
                         </div>
                         
-                        ${item.content ? `<div class="item-content">${item.content}</div>` : ''}
-                        
-                        <div class="item-tags">
-                            <span class="item-tag" style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white;">${this.getCategoryIcon(item.category)} ${item.category}</span>
-                            ${item.tags.map(tag => `<span class="item-tag">#${tag}</span>`).join('')}
-                        </div>
-                        
-                        <div class="item-meta">
-                            <div class="item-date">
-                                📅 ${item.createdAt}
-                                ${item.updatedAt !== item.createdAt ? `(更新: ${item.updatedAt})` : ''}
+                        <div class="item-expandable">
+                            ${item.source ? `<div class="item-source" style="margin-bottom: 10px;">🔗 ${item.source}</div>` : ''}
+                            ${item.content ? `<div class="item-content" style="margin-bottom: 15px;">${item.content}</div>` : ''}
+                            
+                            <div class="item-tags" style="margin-bottom: 15px;">
+                                <span class="item-tag" style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white;">${this.getCategoryIcon(item.category)} ${item.category}</span>
+                                ${item.tags.map(tag => `<span class="item-tag">#${tag}</span>`).join('')}
                             </div>
-                            <div class="item-actions">
-                                ${item.source ? `<button class="action-btn" onclick="window.open('${item.source}', '_blank')" title="開啟連結">🔗</button>` : ''}
-                                <button class="action-btn" onclick="app.deleteItem(${item.id})" title="刪除">🗑️</button>
+                            
+                            <div class="item-meta">
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <select class="status-selector" onchange="app.updateStatus(${item.id}, this.value)" onclick="event.stopPropagation()">
+                                        <option value="未開始" ${item.status === '未開始' ? 'selected' : ''}>⭕ 未開始</option>
+                                        <option value="進行中" ${item.status === '進行中' ? 'selected' : ''}>🔄 進行中</option>
+                                        <option value="已完成" ${item.status === '已完成' ? 'selected' : ''}>✅ 已完成</option>
+                                        <option value="暫停" ${item.status === '暫停' ? 'selected' : ''}>⏸️ 暫停</option>
+                                        <option value="不適用" ${item.status === '不適用' ? 'selected' : ''}>❌ 不適用</option>
+                                    </select>
+                                </div>
+                                <div class="item-actions">
+                                    ${item.source ? `<button class="action-btn" onclick="event.stopPropagation(); window.open('${item.source}', '_blank')" title="開啟連結">🔗</button>` : ''}
+                                    <button class="action-btn" onclick="event.stopPropagation(); app.deleteItem(${item.id})" title="刪除">🗑️</button>
+                                </div>
                             </div>
+                            ${item.updatedAt !== item.createdAt ? `<div style="margin-top: 10px; color: #999; font-size: 0.8em;">最後更新: ${item.updatedAt}</div>` : ''}
                         </div>
                     </div>
                 `).join('');
+            }
+
+            toggleItemExpansion(id) {
+                const item = document.querySelector(`[data-id="${id}"]`);
+                if (item) {
+                    item.classList.toggle('collapsed');
+                    item.classList.toggle('expanded');
+                }
+            }
+
+            getStatusIcon(status) {
+                const icons = {
+                    '未開始': '⭕',
+                    '進行中': '🔄',
+                    '已完成': '✅',
+                    '暫停': '⏸️',
+                    '不適用': '❌'
+                };
+                return icons[status] || '⭕';
             }
 
             getCategoryIcon(category) {
