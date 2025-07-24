@@ -60,7 +60,7 @@
         /* 懸浮按鈕 */
         .floating-btn {
             position: fixed;
-            bottom: 30px;
+            bottom: 80px;
             right: 30px;
             width: 60px;
             height: 60px;
@@ -353,45 +353,72 @@
         .item-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 0;
             gap: 15px;
+            transition: all 0.3s ease;
         }
 
         .item-title {
-            font-size: 1.1em;
+            font-size: 1.3em;
             font-weight: 600;
             color: #333;
             flex: 1;
-            line-height: 1.3;
+            line-height: 1.4;
+            transition: all 0.3s ease;
         }
 
         .item-date-status {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-            gap: 5px;
-            font-size: 0.8em;
+            gap: 8px;
+            font-size: 0.9em;
             flex-shrink: 0;
+            transition: all 0.3s ease;
         }
 
         .item-date {
-            color: #999;
+            color: #666;
             white-space: nowrap;
+            font-size: 1em;
+            transition: all 0.3s ease;
         }
 
         .item-status {
-            font-size: 0.85em;
-            padding: 4px 8px;
-            border-radius: 12px;
+            font-size: 1em;
+            padding: 6px 12px;
+            border-radius: 16px;
             background: #e1e8ff;
             color: #667eea;
             white-space: nowrap;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
 
         .item-status.completed {
             background: #d4edda;
             color: #155724;
+        }
+
+        /* 滑動時的緊湊樣式 */
+        .item-swipe-container.swiping .item-title {
+            font-size: 1.1em;
+        }
+
+        .item-swipe-container.swiping .item-date-status {
+            font-size: 0.8em;
+            gap: 5px;
+        }
+
+        .item-swipe-container.swiping .item-date {
+            font-size: 0.9em;
+        }
+
+        .item-swipe-container.swiping .item-status {
+            font-size: 0.85em;
+            padding: 4px 8px;
+            border-radius: 12px;
         }
 
         /* 滑動操作背景 */
@@ -616,7 +643,7 @@
                 width: 50px;
                 height: 50px;
                 font-size: 20px;
-                bottom: 20px;
+                bottom: 60px;
                 right: 20px;
                 border-width: 2px;
             }
@@ -1227,6 +1254,13 @@
                             currentX = Math.max(maxSwipe, currentX);
                             swipeContainer.style.transform = `translateX(${currentX}px)`;
                             
+                            // 添加滑動狀態樣式
+                            if (currentX < -10) {
+                                swipeContainer.classList.add('swiping');
+                            } else {
+                                swipeContainer.classList.remove('swiping');
+                            }
+                            
                             // 顯示/隱藏操作按鈕
                             if (currentX < -40) {
                                 actionsBg.classList.add('visible');
@@ -1251,26 +1285,31 @@
                         if (currentX < -80) {
                             // 滑動距離夠大，顯示操作按鈕
                             swipeContainer.style.transform = 'translateX(-160px)';
+                            swipeContainer.classList.add('swiping');
                             actionsBg.classList.add('visible');
                             isActionsVisible = true;
                         } else if (isActionsVisible) {
                             // 如果操作按鈕已顯示，再次滑動則隱藏
                             swipeContainer.style.transform = 'translateX(0)';
+                            swipeContainer.classList.remove('swiping');
                             actionsBg.classList.remove('visible');
                             isActionsVisible = false;
                         } else {
                             // 回彈
                             swipeContainer.style.transform = 'translateX(0)';
+                            swipeContainer.classList.remove('swiping');
                             actionsBg.classList.remove('visible');
                         }
                     } else {
                         // 小幅度滑動，回彈或切換狀態
                         if (isActionsVisible) {
                             swipeContainer.style.transform = 'translateX(0)';
+                            swipeContainer.classList.remove('swiping');
                             actionsBg.classList.remove('visible');
                             isActionsVisible = false;
                         } else {
                             swipeContainer.style.transform = 'translateX(0)';
+                            swipeContainer.classList.remove('swiping');
                             actionsBg.classList.remove('visible');
                         }
                     }
@@ -1286,6 +1325,7 @@
                 document.addEventListener('click', (e) => {
                     if (!itemElement.contains(e.target) && isActionsVisible) {
                         swipeContainer.style.transform = 'translateX(0)';
+                        swipeContainer.classList.remove('swiping');
                         actionsBg.classList.remove('visible');
                         isActionsVisible = false;
                     }
