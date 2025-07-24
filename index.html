@@ -1468,31 +1468,26 @@
                         itemElement.classList.remove('dragging');
                         itemElement.style.cursor = 'pointer';
                         this.finalizeDragSort();
-                    } else if (isDragging && Math.abs(currentX) > 50) {
-                        // 滑動操作判斷
-                        if (Math.abs(currentX) > 80) {
-                            // 滑動距離夠大，保持文字縮小和按鈕顯示
+                    } else if (isDragging) {
+                        // 根據最終滑動方向決定狀態
+                        const finalDelta = (e.type === 'mouseup' ? e : e.changedTouches[0]).clientX - startX;
+                        
+                        if (finalDelta < -40) {
+                            // 向左滑動夠遠，保持縮小狀態
                             swipeContainer.classList.add('swiping');
                             actionsBg.classList.add('visible');
                             isActionsVisible = true;
                         } else {
-                            // 滑動距離不夠，恢復原狀
+                            // 沒有滑動夠遠，恢復原狀
                             swipeContainer.classList.remove('swiping');
                             actionsBg.classList.remove('visible');
                             isActionsVisible = false;
                         }
-                    } else {
-                        // 小幅度滑動或已經顯示狀態的切換
-                        if (isActionsVisible) {
-                            // 如果按鈕已顯示，收回
-                            swipeContainer.classList.remove('swiping');
-                            actionsBg.classList.remove('visible');
-                            isActionsVisible = false;
-                        } else {
-                            // 恢復原狀
-                            swipeContainer.classList.remove('swiping');
-                            actionsBg.classList.remove('visible');
-                        }
+                    } else if (isActionsVisible) {
+                        // 輕點時如果按鈕已顯示，則隱藏
+                        swipeContainer.classList.remove('swiping');
+                        actionsBg.classList.remove('visible');
+                        isActionsVisible = false;
                     }
 
                     startX = 0;
