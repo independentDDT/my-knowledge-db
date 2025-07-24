@@ -1459,9 +1459,16 @@
                     }
                 };
 
-                // 觸控結束
+                // 觸控結束 - 確保容器絕對不移動
                 const handleEnd = (e) => {
                     clearTimeout(longPressTimer);
+                    
+                    // 強制重置任何可能的容器移動
+                    swipeContainer.style.transform = 'none';
+                    swipeContainer.style.left = 'auto';
+                    swipeContainer.style.right = 'auto';
+                    swipeContainer.style.top = 'auto';
+                    swipeContainer.style.bottom = 'auto';
                     
                     if (isLongPress) {
                         // 結束排序模式
