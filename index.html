@@ -57,7 +57,7 @@
             font-weight: bold;
         }
 
-        /* 懸浮按鈕 */
+        /* 懸浮按鈕 - 可拖拽 */
         .floating-btn {
             position: fixed;
             bottom: 120px;
@@ -79,12 +79,19 @@
             user-select: none;
             -webkit-user-select: none;
             -ms-user-select: none;
+            touch-action: none;
         }
 
         .floating-btn:hover {
             transform: scale(1.1);
             box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
             background: rgba(255, 255, 255, 0.1);
+        }
+
+        .floating-btn.dragging {
+            transform: scale(1.2);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            background: rgba(255, 255, 255, 0.2);
         }
 
         /* 內容區域切換 */
@@ -353,15 +360,15 @@
         .item-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             margin-bottom: 0;
-            gap: 15px;
+            padding: 0;
             transition: all 0.3s ease;
         }
 
         .item-left-content {
             flex: 1;
-            transition: all 0.3s ease;
+            min-width: 0;
         }
 
         .item-title {
@@ -369,7 +376,7 @@
             font-weight: 600;
             color: #333;
             line-height: 1.4;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             transition: all 0.3s ease;
         }
 
@@ -388,7 +395,8 @@
             white-space: nowrap;
             font-weight: 500;
             transition: all 0.3s ease;
-            align-self: flex-start;
+            flex-shrink: 0;
+            margin-left: 10px;
         }
 
         .item-status.completed {
@@ -396,19 +404,19 @@
             color: #155724;
         }
 
-        /* 滑動時的緊湊樣式 */
+        /* 滑動時的樣式 - 確保內容可見 */
         .item-swipe-container.swiping .item-title {
-            font-size: 1.1em;
-            margin-bottom: 4px;
+            font-size: 1.0em;
+            margin-bottom: 3px;
         }
 
         .item-swipe-container.swiping .item-date {
-            font-size: 0.85em;
+            font-size: 0.8em;
         }
 
         .item-swipe-container.swiping .item-status {
             font-size: 0.8em;
-            padding: 4px 8px;
+            padding: 3px 8px;
             border-radius: 12px;
         }
 
