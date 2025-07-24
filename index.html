@@ -1469,31 +1469,32 @@
                         if (currentX < -80) {
                             // 滑動距離夠大，顯示操作按鈕
                             swipeContainer.style.transform = 'translateX(-160px)';
-                            swipeContainer.classList.add('swiping');
+                            swipeContainer.classList.add('swiped'); // 保持緊湊狀態
+                            swipeContainer.classList.remove('swiping');
                             actionsBg.classList.add('visible');
                             isActionsVisible = true;
                         } else if (isActionsVisible) {
                             // 如果操作按鈕已顯示，再次滑動則隱藏
                             swipeContainer.style.transform = 'translateX(0)';
-                            swipeContainer.classList.remove('swiping');
+                            swipeContainer.classList.remove('swiping', 'swiped');
                             actionsBg.classList.remove('visible');
                             isActionsVisible = false;
                         } else {
                             // 回彈
                             swipeContainer.style.transform = 'translateX(0)';
-                            swipeContainer.classList.remove('swiping');
+                            swipeContainer.classList.remove('swiping', 'swiped');
                             actionsBg.classList.remove('visible');
                         }
                     } else {
                         // 小幅度滑動，回彈或切換狀態
                         if (isActionsVisible) {
                             swipeContainer.style.transform = 'translateX(0)';
-                            swipeContainer.classList.remove('swiping');
+                            swipeContainer.classList.remove('swiping', 'swiped');
                             actionsBg.classList.remove('visible');
                             isActionsVisible = false;
                         } else {
                             swipeContainer.style.transform = 'translateX(0)';
-                            swipeContainer.classList.remove('swiping');
+                            swipeContainer.classList.remove('swiping', 'swiped');
                             actionsBg.classList.remove('visible');
                         }
                     }
@@ -1509,7 +1510,7 @@
                 document.addEventListener('click', (e) => {
                     if (!itemElement.contains(e.target) && isActionsVisible) {
                         swipeContainer.style.transform = 'translateX(0)';
-                        swipeContainer.classList.remove('swiping');
+                        swipeContainer.classList.remove('swiping', 'swiped');
                         actionsBg.classList.remove('visible');
                         isActionsVisible = false;
                     }
