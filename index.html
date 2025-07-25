@@ -1387,8 +1387,19 @@
                 `).join('');
 
                 // 為每個項目添加觸控事件
-                container.querySelectorAll('.item').forEach(item => {
+                container.querySelectorAll('.item').forEach((item, index) => {
+                    const itemId = item.dataset.id;
                     this.initializeItemInteractions(item);
+                    
+                    // 簡單測試：直接在項目上加點擊測試
+                    item.addEventListener('click', (e) => {
+                        const debugInfo = document.getElementById('debugInfo');
+                        if (debugInfo) {
+                            debugInfo.innerHTML = `🖱️ 項目 ${itemId} 被點擊！<br>
+                                點擊位置: (${e.clientX}, ${e.clientY})<br>
+                                時間: ${new Date().toLocaleTimeString()}`;
+                        }
+                    });
                 });
                 
                 // 額外調試：確認事件綁定
@@ -1396,6 +1407,7 @@
                 if (debugInfo) {
                     debugInfo.innerHTML = `🔧 頁面載入完成<br>
                         找到項目數量: ${container.querySelectorAll('.item').length}<br>
+                        已綁定事件到所有項目<br>
                         時間: ${new Date().toLocaleTimeString()}`;
                 }
             }
