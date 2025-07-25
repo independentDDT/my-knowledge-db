@@ -1390,6 +1390,14 @@
                 container.querySelectorAll('.item').forEach(item => {
                     this.initializeItemInteractions(item);
                 });
+                
+                // 額外調試：確認事件綁定
+                const debugInfo = document.getElementById('debugInfo');
+                if (debugInfo) {
+                    debugInfo.innerHTML = `🔧 頁面載入完成<br>
+                        找到項目數量: ${container.querySelectorAll('.item').length}<br>
+                        時間: ${new Date().toLocaleTimeString()}`;
+                }
             }
 
             initializeItemInteractions(itemElement) {
