@@ -1,40 +1,4 @@
-// 綁定所有內聯事件到事件監聽器
-                container.addEventListener('click', (e) => {
-                    // 處理展開/收起
-                    if (e.target.closest('.item-header') && !e.target.closest('.item-status')) {
-                        const item = e.target.closest('.item');
-                        if (item) {
-                            this.toggleItemExpansion(parseInt(item.dataset.id));
-                        }
-                    }
-                    
-                    // 處理刪除按鈕
-                    if (e.target.dataset.deleteId) {
-                        this.deleteItem(parseInt(e.target.dataset.deleteId));
-                    }
-                    
-                    // 處理開啟連結
-                    if (e.target.dataset.url) {
-                        window.open(e.target.dataset.url, '_blank');
-                    }
-                    
-                    // 調試：記錄所有點擊
-                    const debugInfo = document.getElementById('debugInfo');
-                    if (debugInfo) {
-                        debugInfo.innerHTML = `🎯 點擊事件！<br>
-                            目標: ${e.target.className}<br>
-                            最近項目: ${e.target.closest('.item')?.dataset.id || 'none'}<br>
-                            時間: ${new Date().toLocaleTimeString()}`;
-                    }
-                });
-                
-                // 處理狀態選擇器
-                container.addEventListener('change', (e) => {
-                    if (e.target.classList.contains('status-selector')) {
-                        const itemId = parseInt(e.target.dataset.itemId);
-                        this.updateStatus(itemId, e.target.value);
-                    }
-                });<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -737,10 +701,6 @@
         <div class="header">
             <h1>📚 個人知識資料庫</h1>
             <p>收集、整理、追蹤你的學習與靈感</p>
-            <!-- 調試信息顯示區域 -->
-            <div id="debugInfo" style="background: rgba(255,255,255,0.2); padding: 10px; margin-top: 10px; border-radius: 10px; font-size: 0.8em; text-align: left;">
-                調試信息將顯示在這裡...
-            </div>
             <div class="stats">
                 <div class="stat">
                     <div class="stat-number" id="totalCount">0</div>
@@ -1383,7 +1343,7 @@
                         
                         <div class="item-swipe-container">
                             <div class="item-content-wrapper">
-                                <div class="item-header">
+                                <div class="item-header" onclick="app.toggleItemExpansion(${item.id})">
                                     <div class="item-left-content">
                                         <div class="item-title">${item.title}</div>
                                         <div class="item-date">📅 ${item.createdAt}</div>
@@ -1402,7 +1362,7 @@
                                     
                                     <div class="item-meta">
                                         <div style="display: flex; gap: 10px; align-items: center;">
-                                            <select class="status-selector" data-item-id="${item.id}">
+                                            <select class="status-selector" onchange="app.updateStatus(${item.id}, this.value)" onclick="event.stopPropagation()">
                                                 <option value="未開始" ${item.status === '未開始' ? 'selected' : ''}>⭕ 未開始</option>
                                                 <option value="進行中" ${item.status === '進行中' ? 'selected' : ''}>🔄 進行中</option>
                                                 <option value="已完成" ${item.status === '已完成' ? 'selected' : ''}>✅ 已完成</option>
@@ -1411,8 +1371,8 @@
                                             </select>
                                         </div>
                                         <div class="item-actions">
-                                            ${item.source ? `<button class="action-btn" data-url="${item.source}" title="開啟連結">🔗</button>` : ''}
-                                            <button class="action-btn" data-delete-id="${item.id}" title="刪除">🗑️</button>
+                                            ${item.source ? `<button class="action-btn" onclick="event.stopPropagation(); window.open('${item.source}', '_blank')" title="開啟連結">🔗</button>` : ''}
+                                            <button class="action-btn" onclick="event.stopPropagation(); app.deleteItem(${item.id})" title="刪除">🗑️</button>
                                         </div>
                                     </div>
                                     ${item.updatedAt !== item.createdAt ? `<div style="margin-top: 10px; color: #999; font-size: 0.8em;">最後更新: ${item.updatedAt}</div>` : ''}
@@ -1422,72 +1382,10 @@
                     </div>
                 `).join('');
 
-                // 測試事件綁定到不同元素
-                container.querySelectorAll('.item').forEach((item, index) => {
-                    const itemId = item.dataset.id;
-                    const swipeContainer = item.querySelector('.item-swipe-container');
-                    const contentWrapper = item.querySelector('.item-content-wrapper');
-                    const header = item.querySelector('.item-header');
-                    
-                    // 測試綁定到不同層級的元素
-                    const testElements = [
-                        { name: 'item', element: item },
-                        { name: 'swipeContainer', element: swipeContainer },
-                        { name: 'contentWrapper', element: contentWrapper },
-                        { name: 'header', element: header }
-                    ];
-                    
-                    testElements.forEach(({ name, element }) => {
-                        if (element) {
-                            // 簡單點擊測試
-                            element.addEventListener('click', (e) => {
-                                const debugInfo = document.getElementById('debugInfo');
-                                if (debugInfo) {
-                                    debugInfo.innerHTML = `🎯 ${name} 被點擊！<br>
-                                        項目ID: ${itemId}<br>
-                                        元素: ${name}<br>
-                                        時間: ${new Date().toLocaleTimeString()}`;
-                                }
-                                e.stopPropagation(); // 防止冒泡
-                            });
-                            
-                            // 觸控測試
-                            element.addEventListener('touchstart', (e) => {
-                                const debugInfo = document.getElementById('debugInfo');
-                                if (debugInfo) {
-                                    debugInfo.innerHTML = `👆 ${name} 被觸摸！<br>
-                                        項目ID: ${itemId}<br>
-                                        元素: ${name}<br>
-                                        觸點數: ${e.touches.length}<br>
-                                        時間: ${new Date().toLocaleTimeString()}`;
-                                }
-                                e.stopPropagation();
-                            }, { passive: false });
-                        }
-                    });
-                    
-                    // 原本的滑動功能
+                // 為每個項目添加觸控事件
+                container.querySelectorAll('.item').forEach(item => {
                     this.initializeItemInteractions(item);
                 });
-                
-                // 也測試整個容器的事件
-                container.addEventListener('click', (e) => {
-                    const debugInfo = document.getElementById('debugInfo');
-                    if (debugInfo) {
-                        debugInfo.innerHTML = `📦 容器被點擊！<br>
-                            目標: ${e.target.className}<br>
-                            時間: ${new Date().toLocaleTimeString()}`;
-                    }
-                });
-                
-                // 額外調試：確認事件綁定
-                const debugInfo = document.getElementById('debugInfo');
-                if (debugInfo) {
-                    debugInfo.innerHTML = `🔧 頁面載入完成<br>
-                        找到項目數量: ${container.querySelectorAll('.item').length}<br>
-                        已測試綁定到多個元素層級<br>
-                        時間: ${new Date().toLocaleTimeString()}`;
-                }
             }
 
             initializeItemInteractions(itemElement) {
